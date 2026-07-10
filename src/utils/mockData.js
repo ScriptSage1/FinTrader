@@ -1,56 +1,62 @@
-// Available stocks in simulator
-export const initialStocks = [
-  { symbol: 'AAPL', name: 'Apple Inc.', price: 185.20, change: 2.5 },
-  { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 140.75, change: -1.2 },
-  { symbol: 'TSLA', name: 'Tesla Inc.', price: 210.30, change: 3.8 },
-  { symbol: 'MSFT', name: 'Microsoft Corp.', price: 375.50, change: 0.8 },
-  { symbol: 'AMZN', name: 'Amazon Inc.', price: 145.90, change: -0.5 },
-  { symbol: 'NVDA', name: 'NVIDIA Corp.', price: 820.10, change: 4.2 }
+// Real NSE tickers served by the FastAPI backend
+// Tickers map to CSV files in backend/data/
+export const BACKEND_TICKERS = [
+  { symbol: 'EQUITASBNK.NS', name: 'Equitas Small Finance Bank' },
+  { symbol: 'GMRAIRPORT.NS', name: 'GMR Airports Infrastructure' },
+  { symbol: 'HGINFRA.NS',    name: 'H.G. Infra Engineering' },
+  { symbol: 'MOSCHIP.NS',    name: 'MosChip Technologies' },
+  { symbol: 'UJJIVANSFB.NS', name: 'Ujjivan Small Finance Bank' },
 ];
 
-// Initial user holdings
-export const initialHoldings = [
-  { symbol: 'AAPL', shares: 10, avgPrice: 175.50 },
-  { symbol: 'GOOGL', shares: 5, avgPrice: 138.00 },
-  { symbol: 'TSLA', shares: 8, avgPrice: 240.00 }
-];
+// Placeholder initial stocks (prices will be replaced by live backend data on load)
+export const initialStocks = BACKEND_TICKERS.map(t => ({
+  symbol: t.symbol,
+  name: t.name,
+  price: 0,
+  change: 0,
+}));
+
+// Initial user holdings (start empty — prices come from the backend)
+export const initialHoldings = [];
 
 // Initial trade history log
-export const initialTradeHistory = [
-  { id: 1, symbol: 'AAPL', type: 'BUY', shares: 5, price: 175.50, date: '2026-07-08' },
-  { id: 2, symbol: 'TSLA', type: 'SELL', shares: 3, price: 240.00, date: '2026-07-09' }
-];
+export const initialTradeHistory = [];
 
-// AI Recommendations with confidence scores and reasoning
-export const aiSuggestions = {
-  'AAPL': { action: 'BUY', confidence: 82, reason: 'Bullish trend with strong support at $180.' },
-  'GOOGL': { action: 'HOLD', confidence: 65, reason: 'Consolidation phase; wait for breakout.' },
-  'TSLA': { action: 'SELL', confidence: 70, reason: 'Overbought conditions on RSI indicators.' },
-  'MSFT': { action: 'BUY', confidence: 78, reason: 'Strong quarterly growth projections.' },
-  'AMZN': { action: 'HOLD', confidence: 58, reason: 'Market fluctuation; narrow trading range.' },
-  'NVDA': { action: 'BUY', confidence: 89, reason: 'Heavy AI infrastructure demand tailwinds.' }
+// AI Suggestions fallback (used only if backend call fails)
+export const aiSuggestions = {};
+
+// Generates price history from a raw prices array + optional dates array returned by the backend
+export const buildPriceHistory = (prices, dates = []) => {
+  if (!prices || prices.length === 0) return [];
+  const history = [];
+  const now = new Date();
+  for (let i = 0; i < prices.length; i++) {
+    // Use real date if available, otherwise compute synthetic offset date
+    let dateStr;
+    if (dates && dates[i]) {
+      dateStr = dates[i];
+    } else {
+      const d = new Date(now);
+      d.setDate(now.getDate() - (prices.length - 1 - i));
+      dateStr = d.toISOString().split('T')[0];
+    }
+    history.push({ date: dateStr, price: parseFloat(prices[i]) });
+  }
+  return history;
 };
 
-// Generates 30 days of price history using a random walk
+// Legacy helper kept for compatibility
 export const generatePriceHistory = (basePrice, days = 30) => {
   const history = [];
   let currentPrice = basePrice;
   const now = new Date();
-  
   for (let i = days - 1; i >= 0; i--) {
     const date = new Date(now);
     date.setDate(now.getDate() - i);
     const dateStr = date.toISOString().split('T')[0];
-    
-    // Random percent change between -3% and +3%
     const changePercent = (Math.random() * 6 - 3) / 100;
     currentPrice = parseFloat((currentPrice * (1 + changePercent)).toFixed(2));
-    
-    history.push({
-      date: dateStr,
-      price: currentPrice
-    });
+    history.push({ date: dateStr, price: currentPrice });
   }
-  
   return history;
 };

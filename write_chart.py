@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+code = r"""import React, { useState, useRef, useEffect } from 'react';
 import { useTrading } from '../../context/TradingContext';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import { ChevronRight, ChevronsRight } from 'lucide-react';
@@ -267,3 +267,9 @@ export const PriceChart = () => {
 };
 
 export default PriceChart;
+"""
+
+with open('src/components/Dashboard/PriceChart.jsx', 'w', encoding='utf-8', newline='\n') as f:
+    f.write(code)
+
+print('Written successfully,', len(code.splitlines()), 'lines')

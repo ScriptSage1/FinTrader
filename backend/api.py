@@ -72,6 +72,12 @@ def predict_action(state: PortfolioState):
         "confidence": float(torch.max(q_values).item())
     }
 
+@app.get("/tickers")
+def list_tickers():
+    """Return all available tickers (CSV filenames without extension)."""
+    files = [f.replace(".csv", "") for f in os.listdir("data") if f.endswith(".csv")]
+    return {"tickers": sorted(files)}
+
 @app.get("/data/{ticker}")
 def get_stock_data(ticker: str):
     file_path = f"data/{ticker}.csv"
@@ -81,7 +87,13 @@ def get_stock_data(ticker: str):
         
     try:
         df = pd.read_csv(file_path)
+        # Sort by date ascending so history flows oldest → newest
+        if "Date" in df.columns:
+            df = df.sort_values("Date")
+            dates = df["Date"].tolist()
+        else:
+            dates = []
         prices = df["Close"].tolist()
-        return {"ticker": ticker, "prices": prices}
+        return {"ticker": ticker, "prices": prices, "dates": dates}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
