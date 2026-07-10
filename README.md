@@ -192,7 +192,3 @@ find the `data/` directory and `trading_model.pth`.
 The frontend cannot reach the backend. Check that the FastAPI server is running
 on port 8000 and that you started the frontend with `npm run dev` (not a static
 file open).
-
-**Old US stock tickers still showing (AAPL, GOOGL, etc.)**
-Open your browser DevTools, go to Application > Local Storage, and clear all
-`fintrader_*` keys, then refresh the page.
